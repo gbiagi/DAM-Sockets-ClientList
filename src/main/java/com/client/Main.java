@@ -2,6 +2,9 @@ package com.client;
 
 import java.util.List;
 
+import javafx.event.Event;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import org.json.JSONObject;
 
 import javafx.animation.PauseTransition;
@@ -18,6 +21,7 @@ public class Main extends Application {
 
     public static Stage stageFX;
     public static UtilsWS wsClient;
+    public static ListController listController;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -27,11 +31,15 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/assets/layout_main.fxml"));
         Scene scene = new Scene(root);
 
+        listController = new ListController();
+
         stageFX.setScene(scene);
         stageFX.setResizable(true);
         stageFX.setTitle("ClientList");
         stageFX.show();
 
+        // Connect to local server
+        connectToServer();
     }
 
     @Override
@@ -57,17 +65,26 @@ public class Main extends Application {
     }
 
     public static void connectToServer() {
-
+        // Show waiting dialog with no buttons
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Connecting to server");
+        alert.setHeaderText("Please wait while connecting to server...");
+        alert.getDialogPane().lookupButton(ButtonType.OK).setDisable(true); // Disable the OK button
+        alert.setOnCloseRequest(Event::consume); // Prevent closing the dialog
+        alert.show();
 
         pauseDuring(1500, () -> { // Give time to show connecting message ...
-
-            String protocol = "a";
-            String host = "a";
-            String port = "a";
+            String protocol = "ws";
+            String host = "localhost";
+            String port = "12345";
             wsClient = UtilsWS.getSharedInstance(protocol + "://" + host + ":" + port);
+
+            // Close the alert after connection is established
+            Platform.runLater(alert::close);
 
             wsClient.onMessage((response) -> { Platform.runLater(() -> { wsMessage(response); }); });
             wsClient.onError((response) -> { Platform.runLater(() -> { wsError(response); }); });
+
         });
     }
    
@@ -75,15 +92,22 @@ public class Main extends Application {
         // System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
-            case "clients":
-
+            case "deleteClient":
+                ListController.instance.deleteClientFromList(msgObj.getString("name"));
                 break;
-            
+            case "moveClientUp":
+                ListController.instance.moveClientUp(msgObj.getString("name"));
+                break;
+            case "moveClientDown":
+                ListController.instance.moveClientDown(msgObj.getString("name"));
+                break;
+            case "clearList":
+                ListController.instance.clearList();
+                break;
         }
     }
 
     private static void wsError(String response) {
 
-        
     }
 }
