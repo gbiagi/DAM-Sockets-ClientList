@@ -1,12 +1,14 @@
 package com.client;
 
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
+import javafx.stage.Modality;
+
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -25,9 +27,21 @@ public class ListController implements Initializable {
 
     public static ListController instance;
 
+    public Alert alert;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         instance = this;
+
+        alert = new Alert(Alert.AlertType.INFORMATION);
+        // Show waiting dialog with no buttons
+        alert.setTitle("Connecting to server");
+        alert.setHeaderText("Please wait while a connection to the server is established...");
+        alert.getDialogPane().lookupButton(ButtonType.OK).setDisable(true); // Disable the OK button
+        alert.setOnCloseRequest(Event::consume); // Prevent closing the dialog
+        alert.initModality(Modality.APPLICATION_MODAL); // Make the alert modal
+        //alert.show();
+        alert.getDialogPane().requestFocus(); // Request focus for the dialog pane
 
         addButton.setOnAction(e -> addClient());
     }
@@ -143,10 +157,10 @@ public class ListController implements Initializable {
             if (controller.getName().equals(name)) {
                 System.out.println("Client name already exists");
                 // Show error alert
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Client name already exists");
-                alert.showAndWait();
+                Alert alertName = new Alert(Alert.AlertType.ERROR);
+                alertName.setTitle("Error");
+                alertName.setHeaderText("Client name already exists");
+                alertName.showAndWait();
                 return false;
             }
         }
