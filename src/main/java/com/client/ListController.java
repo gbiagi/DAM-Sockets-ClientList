@@ -125,6 +125,17 @@ public class ListController implements Initializable {
         });
     }
 
+    public void editClient(String name, String newName) {
+        for (int i = 0; i < clientList.getChildren().size(); i++) {
+            HBox clientBox = (HBox) clientList.getChildren().get(i);
+            ClientController controller = (ClientController) clientBox.getUserData();
+            if (controller.getName().equals(name)) {
+                controller.setName(newName);
+                break;
+            }
+        }
+    }
+
     public boolean checkName(String name) {
         for (int i = 0; i < clientList.getChildren().size(); i++) {
             HBox clientBox = (HBox) clientList.getChildren().get(i);

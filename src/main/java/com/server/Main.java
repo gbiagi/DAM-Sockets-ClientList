@@ -17,7 +17,8 @@ import java.util.HashMap;
 
 public class Main extends WebSocketServer {
 
-    private HashMap<String, Integer> clientList = new HashMap<>();
+    // private HashMap<String, Integer> clientList = new HashMap<>();
+    private ArrayList<String> clientList = new ArrayList<>();
 
     public Main(InetSocketAddress address) {
         super(address);
@@ -78,12 +79,19 @@ public class Main extends WebSocketServer {
                     System.out.println("Added client");
                     String name = obj.getString("name");
                     int position = obj.getInt("position");
-                    clientList.put(name, position);
+                    clientList.add(name);
                     System.out.println("Updated Client List:\n" + clientList);
                     break;
                 case "editClient":
-                    clientList.put(obj.getString("newName"), clientList.get(obj.getString("name")));
+
+                    clientList.add(obj.getString("newName"));
                     clientList.remove(obj.getString("name"));
+
+                    response.put("type", "editClient");
+                    response.put("name", obj.getString("name"));
+                    response.put("newName", obj.getString("newName"));
+                    conn.send(response.toString());
+
                     System.out.println("Client information updated");
                     System.out.println("Updated Client List:\n" + clientList.toString());
                     break;

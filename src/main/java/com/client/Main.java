@@ -71,7 +71,7 @@ public class Main extends Application {
         alert.setHeaderText("Please wait while connecting to server...");
         alert.getDialogPane().lookupButton(ButtonType.OK).setDisable(true); // Disable the OK button
         alert.setOnCloseRequest(Event::consume); // Prevent closing the dialog
-        alert.show();
+        //alert.show();
 
         pauseDuring(1500, () -> { // Give time to show connecting message ...
             String protocol = "ws";
@@ -94,6 +94,9 @@ public class Main extends Application {
         switch (msgObj.getString("type")) {
             case "deleteClient":
                 ListController.instance.deleteClientFromList(msgObj.getString("name"));
+                break;
+            case "editClient":
+                ListController.instance.editClient(msgObj.getString("name"), msgObj.getString("newName"));
                 break;
             case "moveClientUp":
                 ListController.instance.moveClientUp(msgObj.getString("name"));
