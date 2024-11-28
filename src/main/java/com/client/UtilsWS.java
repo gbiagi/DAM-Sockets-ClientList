@@ -12,6 +12,17 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
 
+import javafx.application.Platform;
+import javafx.event.Event;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
 public class UtilsWS {
 
     private static UtilsWS sharedInstance = null;
@@ -23,6 +34,7 @@ public class UtilsWS {
     private String location = "";
     private static AtomicBoolean exitRequested = new AtomicBoolean(false);
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private Stage connectionDialog;
 
     private UtilsWS(String location) {
         this.location = location;
@@ -31,11 +43,17 @@ public class UtilsWS {
 
     private void createNewWebSocketClient() {
         try {
+            // Show connection dialog
+            Platform.runLater(this::showConnectionDialog);
+
             this.client = new WebSocketClient(new URI(location), new Draft_6455()) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     String message = "WS connected to: " + getURI();
                     System.out.println(message);
+                    Main.pauseDuring(2000, () -> {
+                        hideConnectionDialog();
+                    });
                     if (onOpenCallBack != null) {
                         onOpenCallBack.accept(message);
                     }
@@ -50,6 +68,9 @@ public class UtilsWS {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
+                    // Show dialog when connection is lost
+                    Platform.runLater(() -> showConnectionDialog());
+
                     String message = "WS closed connection from: " + getURI() + " with reason: " + reason;
                     System.out.println(message);
                     if (onCloseCallBack != null) {
@@ -96,6 +117,51 @@ public class UtilsWS {
             client.close();
         }
         createNewWebSocketClient();
+    }
+
+    private void showConnectionDialog() {
+        if (connectionDialog == null) {
+            connectionDialog = new Stage();
+            connectionDialog.initModality(Modality.APPLICATION_MODAL);
+            connectionDialog.setTitle("Connection Status");
+
+            VBox content = new VBox(10);
+            content.setAlignment(Pos.CENTER);
+            content.setPadding(new Insets(20));
+
+            Label headerLabel = new Label("Connecting to server...");
+            headerLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+            Label contentLabel = new Label("Please wait while we establish connection.");
+
+            ProgressIndicator progress = new ProgressIndicator();
+            progress.setProgress(-1);
+
+            content.getChildren().addAll(headerLabel, contentLabel, progress);
+
+            Scene scene = new Scene(content);
+            connectionDialog.setScene(scene);
+            connectionDialog.setResizable(false);
+
+            // Prevent window from being closed
+            connectionDialog.setOnCloseRequest(Event::consume);
+        }
+
+        Platform.runLater(() -> {
+            if (!connectionDialog.isShowing()) {
+                connectionDialog.show();
+                System.out.println("Dialog shown");
+            }
+        });
+    }
+
+    private void hideConnectionDialog() {
+        Platform.runLater(() -> {
+            if (connectionDialog != null && connectionDialog.isShowing()) {
+                connectionDialog.hide();
+                System.out.println("Dialog hidden");
+            }
+        });
     }
 
     public static UtilsWS getSharedInstance(String location) {

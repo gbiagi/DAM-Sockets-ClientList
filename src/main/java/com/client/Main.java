@@ -9,11 +9,8 @@ import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 
 public class Main extends Application {
 
@@ -69,11 +66,19 @@ public class Main extends Application {
         String port = "12345";
         wsClient = UtilsWS.getSharedInstance(protocol + "://" + host + ":" + port);
 
-        wsClient.onMessage((response) -> { Platform.runLater(() -> { wsMessage(response); }); });
-        wsClient.onError((response) -> { Platform.runLater(() -> { wsError(response); }); });
+        wsClient.onMessage((response) -> {
+            Platform.runLater(() -> {
+                wsMessage(response);
+            });
+        });
+
+        wsClient.onError((response) -> {
+            Platform.runLater(() -> {
+                wsError(response);
+            });
+        });
 
     }
-
 
     private static void wsMessage(String response) {
         // System.out.println(response);
@@ -98,6 +103,6 @@ public class Main extends Application {
     }
 
     private static void wsError(String response) {
-
+        System.out.println("erorr..");
     }
 }

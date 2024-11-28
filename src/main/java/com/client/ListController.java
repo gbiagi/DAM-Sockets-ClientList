@@ -33,16 +33,6 @@ public class ListController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         instance = this;
 
-        alert = new Alert(Alert.AlertType.INFORMATION);
-        // Show waiting dialog with no buttons
-        alert.setTitle("Connecting to server");
-        alert.setHeaderText("Please wait while a connection to the server is established...");
-        alert.getDialogPane().lookupButton(ButtonType.OK).setDisable(true); // Disable the OK button
-        alert.setOnCloseRequest(Event::consume); // Prevent closing the dialog
-        alert.initModality(Modality.APPLICATION_MODAL); // Make the alert modal
-        //alert.show();
-        alert.getDialogPane().requestFocus(); // Request focus for the dialog pane
-
         addButton.setOnAction(e -> addClient());
     }
 
@@ -88,7 +78,6 @@ public class ListController implements Initializable {
             e.printStackTrace();
         }
     }
-
 
     public void moveClientUp(String name) {
         ArrayList<HBox> clients = new ArrayList<>();

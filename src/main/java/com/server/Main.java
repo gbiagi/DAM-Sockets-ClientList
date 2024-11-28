@@ -13,7 +13,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 public class Main extends WebSocketServer {
 
     // private HashMap<String, Integer> clientList = new HashMap<>();
@@ -111,10 +110,12 @@ public class Main extends WebSocketServer {
                     response.put("type", "deleteClient");
                     response.put("name", obj.getString("name"));
                     conn.send(response.toString());
+                    clientList.remove(obj.getString("name"));
+                    System.out.println("Updated Client List:\n" + clientList.toString());
                     break;
-                    }
             }
         }
+    }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
@@ -128,6 +129,3 @@ public class Main extends WebSocketServer {
         setConnectionLostTimeout(100);
     }
 }
-
-
-
